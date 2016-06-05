@@ -1,41 +1,17 @@
 {-# LANGUAGE RecursiveDo, TemplateHaskell#-}
-import Data.Map (fromList, singleton)
+import Data.Map (fromList)
 
-import Reflex.Dom (elAttr', dynText, mainWidget, wrapDomEvent, onEventName, EventName(Mousemove),performEvent_, holdDyn, domEvent, el, text, never, elDynHtmlAttr', _el_element)
+import Reflex.Dom (el, elAttr', dynText, mainWidget, wrapDomEvent, onEventName, EventName(Mousemove),performEvent_, holdDyn, text, _el_element)
 
-import Control.Monad (void)
-
-import GHCJS.DOM.EventM (preventDefault, mouseScreenXY, mouseClientXY, mouseOffsetXY) 
+import GHCJS.DOM.EventM (mouseOffsetXY) 
 
 import Data.FileEmbed (embedStringFile)
 
-import Language.Haskell.HsColour.Colourise (Highlight(Foreground), Colour(Rgb), defaultColourPrefs)
 
-import Language.Haskell.HsColour (hscolour, Output(ICSS), varop, layout)
+main = mainWidget $ do 
+    rec (x,_) <- (elAttr' "div" (fromList [("class","area")]) $ dynText t)
+        e <- wrapDomEvent (_el_element x) (onEventName Mousemove) mouseOffsetXY
+        performEvent_ $ return () <$ e
+        t <- holdDyn "" (show <$> e)
 
--- import Reflex.Dom.Contrib.Utils
--- import GHCJS.DOM.MouseEvent ()
-
-element t = fst <$>  (elAttr' "div" (fromList [("class","area")]) $ dynText t)
-
-main = mainWidget . void $ do 
-
-            -- without 
-            rec     x <- element t 
-                    t <- holdDyn "" (show <$> domEvent Mousemove x)
-
-            -- with prevent default
-            rec     x <-  element t       
-                    e <- wrapDomEvent (_el_element x) (onEventName Mousemove) mouseOffsetXY
-                    performEvent_ $ return () <$ e
-                    t <- holdDyn "" (show <$> e)
-
-            static 
-
-static = do
-     el "style" $ text $(embedStringFile "Events.css")
-     holdDyn (color $ $(embedStringFile "Events.hs")) never >>= 
-            elDynHtmlAttr' "div" (singleton "class" "code")
-    where
-        gray = Foreground (Rgb 120 120 120)
-        color = hscolour ICSS  defaultColourPrefs{varop=[gray],layout=[gray]} False True "Source" False
+    el "style" $ text $(embedStringFile "Events.css")
