@@ -1,21 +1,28 @@
 {-# LANGUAGE RecursiveDo, TemplateHaskell#-}
-import qualified Data.Map as M
-import Reflex.Dom
--- import Reflex.Dom.Contrib.Utils
-import Control.Monad (void)
-import GHCJS.DOM.MouseEvent
-import qualified GHCJS.DOM.EventM as J
-import Data.FileEmbed
-import Language.Haskell.HsColour.Colourise
-import Language.Haskell.HsColour
+import Data.Map (fromList, singleton)
 
-element t = fst <$>  (elAttr' "div" (M.fromList [("class","area")]) $ dynText t)
+import Reflex.Dom (elAttr', dynText, mainWidget, wrapDomEvent, onEventName, EventName(Mousemove),performEvent_, holdDyn, domEvent, el, text, never, elDynHtmlAttr', _el_element)
+
+import Control.Monad (void)
+
+import GHCJS.DOM.EventM (preventDefault) 
+
+import Data.FileEmbed (embedStringFile)
+
+import Language.Haskell.HsColour.Colourise (Highlight(Foreground), Colour(Rgb), defaultColourPrefs)
+
+import Language.Haskell.HsColour (hscolour, Output(ICSS), varop, layout)
+
+-- import Reflex.Dom.Contrib.Utils
+-- import GHCJS.DOM.MouseEvent ()
+
+element t = fst <$>  (elAttr' "div" (fromList [("class","area")]) $ dynText t)
 
 main = mainWidget . void $ do 
 
             -- with prevent default
             rec     x <-  element t       
-                    e <- wrapDomEvent (_el_element x) (onEventName Mousemove) J.preventDefault
+                    e <- wrapDomEvent (_el_element x) (onEventName Mousemove) preventDefault
                     performEvent_ $ return () <$ e
                     t <- holdDyn "" (show <$> e)
 
@@ -28,7 +35,7 @@ main = mainWidget . void $ do
 static = do
      el "style" $ text $(embedStringFile "Events.css")
      holdDyn (color $ $(embedStringFile "Events.hs")) never >>= 
-            elDynHtmlAttr' "div" (M.singleton "class" "code")
+            elDynHtmlAttr' "div" (singleton "class" "code")
     where
         gray = Foreground (Rgb 120 120 120)
         color = hscolour ICSS  defaultColourPrefs{varop=[gray],layout=[gray]} False True "Source" False
