@@ -5,7 +5,7 @@ import Reflex.Dom (elAttr', dynText, mainWidget, wrapDomEvent, onEventName, Even
 
 import Control.Monad (void)
 
-import GHCJS.DOM.EventM (preventDefault) 
+import GHCJS.DOM.EventM (preventDefault, mouseScreenXY, mouseClientXY, mouseOffsetXY) 
 
 import Data.FileEmbed (embedStringFile)
 
@@ -20,15 +20,15 @@ element t = fst <$>  (elAttr' "div" (fromList [("class","area")]) $ dynText t)
 
 main = mainWidget . void $ do 
 
-            -- with prevent default
-            rec     x <-  element t       
-                    e <- wrapDomEvent (_el_element x) (onEventName Mousemove) preventDefault
-                    performEvent_ $ return () <$ e
-                    t <- holdDyn "" (show <$> e)
-
             -- without 
             rec     x <- element t 
                     t <- holdDyn "" (show <$> domEvent Mousemove x)
+
+            -- with prevent default
+            rec     x <-  element t       
+                    e <- wrapDomEvent (_el_element x) (onEventName Mousemove) mouseOffsetXY
+                    performEvent_ $ return () <$ e
+                    t <- holdDyn "" (show <$> e)
 
             static 
 
