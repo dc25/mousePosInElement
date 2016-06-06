@@ -21,6 +21,8 @@ main = mainWidget $ do
                       (onEventName Mousemove) 
                       mouseOffsetXY
 
+    -- This demo seems to work without performEvent_ .  However, it may be
+    -- necessary in some cases.  See reflex irc discussion for details.
     performEvent_ $ return () <$ mouseEvent
 
     let mouseXYToString (x,y) = "X = " ++ show x ++ ";Y = " ++ show y
