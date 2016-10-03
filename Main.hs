@@ -1,5 +1,7 @@
+{-# LANGUAGE OverloadedStrings #-}
 import Reflex.Dom 
 import Data.Map (fromList)
+import Data.Text (pack)
 import GHCJS.DOM.EventM (mouseOffsetXY) 
 
 main = mainWidget $ do 
@@ -17,13 +19,14 @@ main = mainWidget $ do
                       (return ())
 
     mouseEvent <- wrapDomEvent 
-                      (_el_element elm) 
+                      -- (_el_element elm) -- deprecated
+                      (_element_raw elm) -- makes no difference
                       (onEventName Mousemove) 
                       mouseOffsetXY
 
     let mouseXYToString (x,y) = "X = " ++ show x ++ ";Y = " ++ show y
 
-    t <- holdDyn "" (mouseXYToString <$> mouseEvent)
+    t <- holdDyn "" (pack.mouseXYToString <$> mouseEvent)
 
     el "div" $ dynText t
 
