@@ -19,8 +19,7 @@ main = mainWidget $ do
                       (return ())
 
     mouseEvent <- wrapDomEvent 
-                      -- (_el_element elm) -- deprecated
-                      (_element_raw elm) -- makes no difference
+                      (_element_raw elm) 
                       (onEventName Mousemove) 
                       mouseOffsetXY
 
